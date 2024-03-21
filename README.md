@@ -1,16 +1,14 @@
 # Fast-Poly
 This is the Official Repo For the Paper "Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking"
 
-> [**Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking**](pending),  
+> [**Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking**](https://arxiv.org/abs/2403.13443),  
 > Xiaoyu Li<sup>\*</sup>, Dedong Liu<sup>\*</sup>, Yitao Wu<sup>\*</sup>, Xian Wu<sup>\*</sup>, Jinghan Gao, Lijun Zhao         
-> *arXiv technical report ([pending](pending))*,  
+> *arXiv technical report ([arXiv 2403.13443](https://arxiv.org/abs/2403.13443))*,  
 
-### [paper](pending) | [video](https://www.youtube.com/watch?v=nFmeL_PjOyA&ab_channel=LIXIAOYU)
+### [paper](https://arxiv.org/abs/2403.13443) | [youtube](https://www.youtube.com/watch?v=nFmeL_PjOyA&ab_channel=LIXIAOYU) | [bilibili](https://www.bilibili.com/video/BV1iz421Z7qj/?vd_source=b170cf0cb90cd4c536ec11f67c9f6522)
 
 ## Note (Thank you for your patience)
-- **Please note that the paper will be uploaded at 8pm ET on March 20th because the article is being processed by Arxiv.** 
 - **The code will be uploaded after the first round of review.**
-- Quantitative visualization is available now at [URL](https://www.youtube.com/watch?v=nFmeL_PjOyA&ab_channel=LIXIAOYU).
 
 ## Quick Overview
 
@@ -19,12 +17,12 @@ We propose Fast-Poly, a fast and effective 3D MOT method based on the Tracking-B
 
 ## News
 
-- 2024-03-20. Warm-up :fire:! The official repo and [paper](pending) of Fast-Poly have been released. We will release the code soon. Welcome to follow.
+- 2024-03-20. Warm-up :fire:! The official repo and [paper](https://arxiv.org/abs/2403.13443) of Fast-Poly have been released. We will release the code soon. Welcome to follow.
 - 2024-03-18. Our method ranks first among all methods on the nuScenes tracking benchmark :fire:.
 
 ## Main Results
 
-### nuScenes
+### [nuScenes](https://www.nuscenes.org/tracking?externalData=all&mapData=all&modalities=Any)
 
 #### 3D Multi-object tracking on nuScenes test set
 
@@ -42,7 +40,7 @@ We propose Fast-Poly, a fast and effective 3D MOT method based on the Tracking-B
  Fast-Poly     | LargeKernel3D   | 76.0     | 65.8     | 34.2     |  
  Poly-MOT      | LargeKernel3D   | 75.2     | 54.1     | 8.6      |
 
-### Waymo
+### [Waymo](https://waymo.com/open/challenges/2020/3d-tracking/)
 
 ### 3D Multi-object tracking on Waymo test set
 
@@ -61,21 +59,28 @@ We propose Fast-Poly, a fast and effective 3D MOT method based on the Tracking-B
 
 ## Contact
 
-Welcome to follow our previous work '[Poly-MOT: A Polyhedral Framework For 3D Multi-Object Tracking](https://github.com/lixiaoyu2000/Poly-MOT/tree/main)'.
+Welcome to follow our previous work "[Poly-MOT: A Polyhedral Framework For 3D Multi-Object Tracking](https://github.com/lixiaoyu2000/Poly-MOT/tree/main)".
 
 
 ## Citation
 If you find this project useful in your research, please consider citing by :smile_cat::
 ```
-**pending**
-```
-```
-@misc{li2023polymot,
-      title={Poly-MOT: A Polyhedral Framework For 3D Multi-Object Tracking}, 
-      author={Xiaoyu Li and Tao Xie and Dedong Liu and Jinghan Gao and Kun Dai and Zhiqiang Jiang and Lijun Zhao and Ke Wang},
-      year={2023},
-      eprint={2307.16675},
+@misc{li2024fastpoly,
+      title={Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking}, 
+      author={Xiaoyu Li and Dedong Liu and Lijun Zhao and Yitao Wu and Xian Wu and Jinghan Gao},
+      year={2024},
+      eprint={2403.13443},
       archivePrefix={arXiv},
-      primaryClass={cs.RO}
+      primaryClass={cs.CV}
+}
+```
+```
+@inproceedings{li2023poly,
+  title={Poly-mot: A polyhedral framework for 3d multi-object tracking},
+  author={Li, Xiaoyu and Xie, Tao and Liu, Dedong and Gao, Jinghan and Dai, Kun and Jiang, Zhiqiang and Zhao, Lijun and Wang, Ke},
+  booktitle={2023 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={9391--9398},
+  year={2023},
+  organization={IEEE}
 }
 ```
