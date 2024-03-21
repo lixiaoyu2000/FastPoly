@@ -1,6 +1,8 @@
 # Fast-Poly
 This is the Official Repo For the Paper "Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking"
 
+![comparison](https://github.com/lixiaoyu2000/FastPoly/blob/main/docs/comparison.jpg)
+
 > [**Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking**](https://arxiv.org/abs/2403.13443),  
 > Xiaoyu Li<sup>\*</sup>, Dedong Liu<sup>\*</sup>, Yitao Wu<sup>\*</sup>, Xian Wu<sup>\*</sup>, Jinghan Gao, Lijun Zhao         
 > *arXiv technical report ([arXiv 2403.13443](https://arxiv.org/abs/2403.13443))*,  
