@@ -1,4 +1,6 @@
 # Fast-Poly
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/fast-poly-a-fast-polyhedral-framework-for-3d/3d-multi-object-tracking-on-nuscenes)](https://paperswithcode.com/sota/3d-multi-object-tracking-on-nuscenes?p=fast-poly-a-fast-polyhedral-framework-for-3d)
+
 This is the Official Repo For the Paper "Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking"
 
 ![comparison](https://github.com/lixiaoyu2000/FastPoly/blob/main/docs/comparison.jpg)
