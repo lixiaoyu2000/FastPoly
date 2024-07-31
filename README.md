@@ -21,6 +21,7 @@ We propose Fast-Poly, a fast and effective 3D MOT method based on the Tracking-B
 
 ## News
 
+- 2024-07-30. We revise the [paper](https://arxiv.org/abs/2403.13443), mainly including adding an in-depth discussion of A-gIoU. Welcome to follow.
 - 2024-03-20. Warm-up :fire:! The official repo and [paper](https://arxiv.org/abs/2403.13443) of Fast-Poly have been released. We will release the code soon. Welcome to follow.
 - 2024-03-18. Our method ranks first among all methods on the nuScenes tracking benchmark :fire:.
 
