@@ -12,7 +12,8 @@ This is the Official Repo For the Paper "Fast-Poly: A Fast Polyhedral Framework 
 ### [paper](https://arxiv.org/abs/2403.13443) | [youtube](https://www.youtube.com/watch?v=nFmeL_PjOyA&ab_channel=LIXIAOYU) | [bilibili](https://www.bilibili.com/video/BV1iz421Z7qj/?vd_source=b170cf0cb90cd4c536ec11f67c9f6522)
 
 ## Note (Thank you for your patience)
-- **The code will be uploaded after the first round of review.**
+- We revise the [paper](https://arxiv.org/abs/2403.13443), mainly including adding an in-depth discussion of A-gIoU. Welcome to follow.
+- **The code will be uploaded after the first round of review, most likely in late August.**
 
 ## Quick Overview
 
