@@ -1,0 +1,71 @@
+basic:
+  split: 'val'         # dataset split, val/test
+  has_velo: True       # whether detector has velo info
+  LiDAR_interval: 0.5  # the interval between two adjacent frames of the LiDAR scan, NuScenes: 2HZ
+  CLASS_NUM: 7         # number of tracking category, NuScenes: 7
+
+  # CLASS_LABEL: {'bicycle': 0, 
+  #               'bus': 1, 
+  #               'car': 2, 
+  #               'motorcycle': 3, 
+  #               'pedestrian': 4, 
+  #               'trailer': 5, 
+  #               'truck': 6}
+
+preprocessing:
+  SF_thre: {0: 0.15, 3: 0.16, 1: 0.12, 2: 0.16, 5: 0.13, 6: 0, 4: 0.19}
+  NMS_type: scale_nms  # blend_nms, scale_nms
+  # -------------classic NMS---------------
+  #  NMS_thre: 0.08
+  #  NMS_metric: a_giou_bev  # iou_bev, iou_3d, giou_bev, giou_3d, d_eucl, a_giou_bev, a_giou_3d, a_iou_bev
+  # --------------scale NMS----------------
+  NMS_thre: { 0: 0.08, 3: 0.08, 1: 0.08, 2: 0.08, 5: 0.08, 6: 0.08, 4: 0.08}
+  SCALE: { 0: 1.4, 3: 1, 1: 1, 2: 1, 5: 1, 6: 1, 4: 1.1}
+  NMS_metric: { 1: 'a_giou_bev', 0: 'a_giou_bev', 2: 'iou_bev', 3: 'iou_bev', 4: 'a_giou_bev', 5: 'iou_bev', 6: 'a_giou_bev'}
+  voxel_mask: True
+  voxel_mask_size: {0: 5, 3: 5, 1: 5, 2: 5, 5: 5, 6: 5, 4: 5} # the voxel mask threshold, default first element is used
+
+association:
+  category_metrics: { 1: 'a_giou_bev', 0: 'a_giou_3d', 2: 'a_giou_3d', 3: 'a_giou_3d', 4: 'a_giou_3d', 5: 'a_giou_3d', 6: 'a_giou_3d'}
+  second_metric: 'a_giou_bev'
+  two_stage: True  # Whether to use two-stage data association
+  first_thre: {1: 1.16, 0: 1.62, 2: 1.21, 3: 1.6, 4: 1.78, 5: 1.16, 6: 1.22}  # category-specific one-stage thresholds
+  second_thre: {0: 1.0}  # two-stage thresholds
+  algorithm : 'Hungarian'  # Greedy, Hungarian, Mutual Nearest Neighbor(MNN)
+  voxel_mask: True
+  voxel_mask_size: {0: 3, 3: 3, 1: 3, 2: 3, 5: 3, 6: 3, 4: 3} # the voxel mask threshold, default first element is used
+
+motion_model:
+  # two kalman filter, LinearKalmanFilter, ExtendKalmanFilter
+  filter: {1: 'ExtendKalmanFilter', 0: 'ExtendKalmanFilter', 2: 'ExtendKalmanFilter', 3: 'ExtendKalmanFilter', 4: 'ExtendKalmanFilter', 5: 'LinearKalmanFilter', 6: 'ExtendKalmanFilter'}
+  # note the consistency of the linear relationship between the model and the filter
+  model: {1: 'CTRA', 0: 'BICYCLE', 2: 'CTRA', 3: 'BICYCLE', 4: 'CTRA', 5: 'CV', 6: 'CTRA'}
+
+geometry_model:
+  use: {1: True, 0: True, 2: True, 3: True, 4: True, 5: True, 6: True}             # whether to decouple constant states from motion models
+  filter: {1: 'MedianModel', 0: 'MedianModel', 2: 'MedianModel', 3: 'MedianModel', 4: 'MeanModel', 5: 'MedianModel', 6: 'MedianModel'} # optional: KalmanModel, MedianModel, MeanModel
+  window_size: {1: 3, 0: 3, 2: 3, 3: 3, 4: 3, 5: 3, 6: 3}
+
+life_cycle:
+  basic:
+    max_age: {1: 10, 0: 10, 2: 15, 3: 20, 4: 10, 5: 10, 6: 20}
+    min_hit: {1: 1, 0: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1}
+    decay_rate: {0: 0.14, 3: 0.56, 1: 0.3, 2: 0.52, 5: 0.52, 6: 0.22, 4: 0.56}
+  score:
+#   delete_thre: {0: 0.03, 3: 0.03, 1: 0.03, 2: 0.03, 5: 0.03, 6: 0.03, 4: 0.03}  # confidence-based delete tracklets threshold
+    delete_thre: {0: 0.04, 3: 0.04, 1: 0.08, 2: 0.04, 5: 0.04, 6: 0.04, 4: 0.1}
+    score_decay: {0: 0.24, 3: 0.28, 1: 0.24, 2: 0.26, 5: 0.22, 6: 0.28, 4: 0.18}         # tracklet score predict function
+    predict_mode: 'Normal'     # tracklet score predict function, Minus/Normal
+    update_mode: 'Multi'      # tracklet score update function, Multi(Multiplication)/Parallel(Parallel addition)/Normal
+    termination: average # average, latest
+
+output:
+  punish_num: 1         # The maximum number of predicted frames to write to the output file
+  post_nms: False       # whether to use post-nms, this feature is used to reduce FP prediction
+  NMS_thre: 0.08
+  NMS_type: blend_nms   # blend_nms, no_blend_nms, blend_soft_nms
+  NMS_metric: iou_bev   # iou_bev, iou_3d, giou_bev, giou_3d, d_eucl
+
+debug:
+  is_debug: true # Whether to debug the code
+

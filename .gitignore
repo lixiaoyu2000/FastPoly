@@ -1,0 +1,8 @@
+*.json
+result/
+eval_result*/
+__pycache__
+*.ipynb
+**/__pycache__
+**/.ipynb_checkpoints
+.idea/
