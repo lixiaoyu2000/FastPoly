@@ -149,7 +149,7 @@ def linear_search_parameters(interval: List, step: float, parameter: str = 'firs
 
         # inference Poly-MOT with changed config, and save result
         if not os.path.exists(metrics_summary_path):
-            run_nusc_polymot(config, res_path, eval_path)
+            run_nusc_fastpoly(config, res_path, eval_path)
 
         # record each epoch eval result
         all_results[epoch] = load_file(metrics_summary_path)['label_metrics'][sort_metric]
@@ -178,7 +178,7 @@ def linear_search_parameters(interval: List, step: float, parameter: str = 'firs
         json.dump(best_configs, open(best_cfg_path, "w"))
         print('writing best configs in folder: ' + os.path.abspath(best_cfg_path))
 
-def run_nusc_polymot(config, result_path, eval_path):
+def run_nusc_fastpoly(config, result_path, eval_path):
     os.makedirs(result_path, exist_ok=True)
     os.makedirs(eval_path, exist_ok=True)
 
@@ -203,8 +203,8 @@ if __name__ == "__main__":
     # single inference, load and save config
     config = yaml.load(open(args.config_path, 'r'), Loader=yaml.Loader)
 
-    # run Poly-MOT
-    run_nusc_polymot(config, args.result_path, args.eval_path)
+    # run Fast-Poly
+    run_nusc_fastpoly(config, args.result_path, args.eval_path)
 
     # multi inference, linear search parameters
     # linear_search_parameters([1, 11], 1, 'voxel_mask_size')
