@@ -16,11 +16,97 @@ parser.add_argument('--nusc_path', type=str, default='/data1/wyt_dataset1/nuscen
 parser.add_argument('--config_path', type=str, default='config/nusc_config.yaml')
 parser.add_argument('--detection_path', type=str, default='data/detector/val/val_centerpoint_new.json')
 parser.add_argument('--first_token_path', type=str, default='data/utils/first_token_table/trainval/nusc_first_token.json')
+parser.add_argument('--end_token_path', type=str, default='data/utils/end_token_table/trainval/nusc_end_token.json')
 parser.add_argument('--result_path', type=str, default='result/tmux_0')
 parser.add_argument('--eval_path', type=str, default='eval_results/eval_result_0/')
 parser.add_argument('--all_eval_path', type=str, default='eval_results/linear_search_parameters/')
 args = parser.parse_args()
 
+def pre(shared_variable, nusc_loader):
+    for i in range(len(nusc_loader)):
+        if i != 0:
+            tra_done.wait()
+            tra_done.clear()
+        shared_variable.put(nusc_loader[i])
+
+def tra(shared_variable, nusc_loader):
+    # PolyMOT modal is completely dependent on the detector modal
+    result = {
+        "results": {},
+        "meta": {
+            "use_camera": True,
+            "use_lidar": False,
+            "use_radar": False,
+            "use_map": False,
+            "use_external": False,
+        }
+    }
+    # tracking and output file
+    with open(args.end_token_path, 'r') as f:
+        is_end = json.load(f)
+    nusc_tracker = Tracker(config=nusc_loader.config)
+    n = len(nusc_loader)
+    while n > 0:
+        # predict all valid trajectories
+        nusc_tracker.tras_predict()
+                
+        frame_data = shared_variable.get()
+        nusc_tracker.det_infos, nusc_tracker.frame_id, nusc_tracker.seq_id = frame_data, frame_data['frame_id'], frame_data['seq_id']
+        sample_token = frame_data['sample_token']
+        # track each sequence
+        nusc_tracker.tracking(frame_data)
+        tra_done.set()
+        nusc_tracker.frame_id += 1
+        """
+        only for debug
+        {
+            'np_track_res': np.array, [num, 17] add 'tracking_id', 'seq_id', 'frame_id'
+            'box_track_res': np.array[NuscBox], [num,]
+            'no_val_track_result': bool
+        }
+        """
+        # output process
+        sample_results = []
+        if 'no_val_track_result' not in frame_data:
+            for predict_box in frame_data['box_track_res']:
+                box_result = {
+                    "sample_token": sample_token,
+                    "translation": [float(predict_box.center[0]), float(predict_box.center[1]),
+                                    float(predict_box.center[2])],
+                    "size": [float(predict_box.wlh[0]), float(predict_box.wlh[1]), float(predict_box.wlh[2])],
+                    "rotation": [float(predict_box.orientation[0]), float(predict_box.orientation[1]),
+                                 float(predict_box.orientation[2]), float(predict_box.orientation[3])],
+                    "velocity": [float(predict_box.velocity[0]), float(predict_box.velocity[1])],
+                    "tracking_id": str(predict_box.tracking_id),
+                    "tracking_name": predict_box.name,
+                    "tracking_score": predict_box.score,
+                }
+                sample_results.append(box_result.copy())
+
+        # add to the output file
+        if sample_token in result["results"]:
+            result["results"][sample_token] = result["results"][sample_token] + sample_results
+        else:
+            result["results"][sample_token] = sample_results
+
+        n -= 1
+        if sample_token in is_end: nusc_tracker.reset()
+
+    # sort track result by the tracking score
+    for sample_token in result["results"].keys():
+        confs = sorted(
+            [
+                (-d["tracking_score"], ind)
+                for ind, d in enumerate(result["results"][sample_token])
+            ]
+        )
+        result["results"][sample_token] = [
+            result["results"][sample_token][ind]
+            for _, ind in confs[: min(500, len(confs))]
+        ]
+
+    # write file
+    json.dump(result, open(args.result_path + "/results.json", "w"))
 
 def main(result_path, token, process, nusc_loader):
     # PolyMOT modal is completely dependent on the detector modal
@@ -192,7 +278,18 @@ def run_nusc_fastpoly(config, result_path, eval_path):
                                  config)
     print('writing result in folder: ' + os.path.abspath(result_path))
 
-    main(result_path, 0, 1, nusc_loader)
+    if config["basic"]["Multiprocessing"]:
+        # run on two processes
+        shared_variable = multiprocessing.Queue()
+        p1 = multiprocessing.Process(target=pre, args=(shared_variable, nusc_loader))
+        p2 = multiprocessing.Process(target=tra, args=(shared_variable, nusc_loader))
+        p1.start()
+        p2.start()
+        p1.join()
+        p2.join()
+    else:
+        main(result_path, 0, 1, nusc_loader)
+
     print('result is written in folder: ' + os.path.abspath(result_path))
 
     # eval result
@@ -203,6 +300,7 @@ if __name__ == "__main__":
     # single inference, load and save config
     config = yaml.load(open(args.config_path, 'r'), Loader=yaml.Loader)
 
+    tra_done = multiprocessing.Event()
     # run Fast-Poly
     run_nusc_fastpoly(config, args.result_path, args.eval_path)
 

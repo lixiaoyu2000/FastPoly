@@ -61,11 +61,12 @@ class Tracker:
         }
         """
         # step0. reset tracker for each seq
-        if data_info['is_first_frame']: self.reset()
-        self.det_infos, self.frame_id, self.seq_id = data_info, data_info['frame_id'], data_info['seq_id']
+        if not self.cfg["basic"]["Multiprocessing"]:
+            if data_info['is_first_frame']: self.reset()
+            self.det_infos, self.frame_id, self.seq_id = data_info, data_info['frame_id'], data_info['seq_id']
 
-        # step1. predict all valid trajectories
-        self.tras_predict()
+            # step1. predict all valid trajectories
+            self.tras_predict()
 
         # step2. if there is no dets, we will punish all valid trajectories
         if self.det_infos['no_dets']:
