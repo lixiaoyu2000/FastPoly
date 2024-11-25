@@ -3,6 +3,7 @@ basic:
   has_velo: True       # whether detector has velo info
   LiDAR_interval: 0.5  # the interval between two adjacent frames of the LiDAR scan, NuScenes: 2HZ
   CLASS_NUM: 7         # number of tracking category, NuScenes: 7
+  Multiprocessing: False
 
   # CLASS_LABEL: {'bicycle': 0, 
   #               'bus': 1, 
