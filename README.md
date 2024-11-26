@@ -34,7 +34,8 @@ On the Waymo dataset, Fast-Poly exhibits competitive accuracy with 63.6\% MOTA a
 
 ## TODO list
 
-- 2024-10-03. merge multi-processing function, and support Waymo dataset.
+- 2024-11-26. support Waymo dataset.
+- 2024-10-03. ~~merge multi-processing function,~~ and support Waymo dataset.
 
 ## Main Results
 
