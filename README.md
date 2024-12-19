@@ -154,13 +154,12 @@ Fast-Poly is released under the MIT license.
 ## Citation
 If you find this project useful in your research, please consider citing by :smile_cat::
 ```
-@misc{li2024fastpoly,
-      title={Fast-Poly: A Fast Polyhedral Framework For 3D Multi-Object Tracking}, 
-      author={Xiaoyu Li and Dedong Liu and Yitao Wu and Xian Wu and Lijun Zhao and Jinghan Gao},
-      year={2024},
-      eprint={2403.13443},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@article{li2024fast,
+  title={Fast-Poly: A Fast Polyhedral Algorithm For 3D Multi-Object Tracking},
+  author={Li, Xiaoyu and Liu, Dedong and Wu, Yitao and Wu, Xian and Zhao, Lijun and Gao, Jinghan},
+  journal={IEEE Robotics and Automation Letters},
+  year={2024},
+  publisher={IEEE}
 }
 ```
 ```
