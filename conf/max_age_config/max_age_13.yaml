@@ -1,0 +1,11 @@
+# @package _global_
+life_cycle:
+  basic:
+    max_age: 
+      1: 13
+      0: 13
+      2: 13
+      3: 13
+      4: 13
+      5: 13
+      6: 13

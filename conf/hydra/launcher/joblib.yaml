@@ -1,0 +1,7 @@
+# _target_: hydra_plugins.hydra_joblib_launcher.joblib_launcher.JoblibLauncher
+# n_jobs: 6
+
+_target_: hydra_plugins.hydra_joblib_launcher.joblib_launcher.JoblibLauncher
+n_jobs: 2  # -1 表示使用所有可用核心，或设置具体数字如 6
+backend: loky  # 或 threading, multiprocessing
+verbose: 10 

@@ -1,0 +1,3 @@
+# 忽略 max_age_sweep 下所有子文件夹
+experiments/max_age_sweep/*
+

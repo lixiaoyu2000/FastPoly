@@ -1,0 +1,3 @@
+- frag_length_config=frag_4
+- frag_score_config=score_5
+- experiment=sweep_frag_score

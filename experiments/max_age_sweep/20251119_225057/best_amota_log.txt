@@ -1,0 +1,22 @@
+
+=== 分类别最佳 AMOTA ===
+bicycle       AMOTA=0.5772  |  run=experiments/max_age_sweep/20251119_225057/5_max_age_config=max_age_15/eval
+bus           AMOTA=0.8555  |  run=experiments/max_age_sweep/20251119_225057/1_max_age_config=max_age_11/eval
+car           AMOTA=0.8605  |  run=experiments/max_age_sweep/20251119_225057/4_max_age_config=max_age_14/eval
+motorcycle    AMOTA=0.7918  |  run=experiments/max_age_sweep/20251119_225057/3_max_age_config=max_age_13/eval
+pedestrian    AMOTA=0.8357  |  run=experiments/max_age_sweep/20251119_225057/4_max_age_config=max_age_14/eval
+trailer       AMOTA=0.5290  |  run=experiments/max_age_sweep/20251119_225057/0_max_age_config=max_age_10/eval
+truck         AMOTA=0.7124  |  run=experiments/max_age_sweep/20251119_225057/5_max_age_config=max_age_15/eval
+
+=== 合并后的 config(编号格式) ===
+{
+  "0": 15,
+  "1": 11,
+  "2": 14,
+  "3": 13,
+  "4": 14,
+  "5": 10,
+  "6": 15
+}
+
+=== AMOTA 平均值: 0.7375 ===

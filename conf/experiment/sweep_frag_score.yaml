@@ -1,0 +1,13 @@
+# @package _global_
+
+
+
+hydra:
+  mode: MULTIRUN
+  sweep:
+    dir: experiments/frag_score_sweep/${now:%Y%m%d_%H%M%S}
+    subdir: ${hydra.job.num}_${hydra.job.override_dirname} 
+  sweeper:
+    params:
+      frag_score_config: score_1,score_2,score_3,score_4,score_5,score_6,score_7
+  

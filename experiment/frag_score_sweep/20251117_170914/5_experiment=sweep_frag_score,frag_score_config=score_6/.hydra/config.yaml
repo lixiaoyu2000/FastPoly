@@ -1,0 +1,365 @@
+basic:
+  CLASS_NUM: 7
+  LiDAR_interval: 0.5
+  has_velo: true
+  split: val
+debug:
+  is_debug: true
+fusion:
+  frag_length:
+    0: 1
+    1: 1
+    2: 1
+    3: 1
+    4: 1
+    5: 1
+    6: 1
+  frag_score:
+    0: 6
+    1: 6
+    2: 6
+    3: 6
+    4: 6
+    5: 6
+    6: 6
+  fusion_matcher:
+    fusion_match_thre:
+      0: 1.15
+      1: 1.15
+      2: 0.25
+      3: 0.75
+      4: 1.15
+      5: 0.85
+      6: 0.4
+    intra_cost_func:
+      0: giou_3d
+      1: giou_3d
+      2: giou_3d
+      3: giou_3d
+      4: giou_3d
+      5: giou_3d
+      6: giou_3d
+    intra_cost_fusion_func: min
+    intra_match_algorithm: Graph_max_weight_matching
+    intra_use_cls_mask: true
+    intra_use_voxel_mask: true
+    intra_voxel_mask_size:
+      0: 10
+      1: 10
+      2: 10
+      3: 10
+      4: 10
+      5: 10
+      6: 10
+    matching_based_fusion: true
+    timeoverlap_mask_type: NoneOverlap
+    use_matched_completion: true
+  inter_tracker:
+    baseline_tracker_idx: 1
+    cost_func:
+      0: fast_giou_bev
+      1: fast_giou_bev
+      2: fast_giou_bev
+      3: fast_giou_bev
+      4: fast_giou_bev
+      5: fast_giou_bev
+      6: fast_giou_bev
+    link_match_thre:
+      0: 0.55
+      1: 0.4
+      2: 0.55
+      3: 0.7
+      4: 0.0
+      5: 0.4
+      6: 0.6
+    location_fusion_func: mean
+    match_algorithm: ConnectedGraph
+    score_fusion_func: mean
+    use_cls_mask: true
+    use_tracker_mask: false
+    use_triangle_mask: false
+    use_voxel_mask: true
+    voxel_mask_size:
+      0: 10
+      1: 10
+      2: 10
+      3: 10
+      4: 10
+      5: 10
+      6: 10
+matching:
+  inter_tracker:
+    baseline_tracker_idx: 1
+    cost_func:
+      0: iou_3d
+      1: iou_3d
+      2: iou_3d
+      3: iou_3d
+      4: iou_3d
+      5: iou_3d
+      6: iou_3d
+    location_fusion_func: mean
+    match_algorithm: ConnectedGraph
+    match_thre:
+      0: 0.25
+      1: 0.05
+      2: 0.0
+      3: 0.2
+      4: 0.0
+      5: 0.1
+      6: 0.0
+    score_fusion_func: mean
+    use_cls_mask: true
+    use_tracker_mask: true
+    use_triangle_mask: true
+    use_voxel_mask: true
+    voxel_mask_size:
+      0: 10
+      1: 10
+      2: 10
+      3: 10
+      4: 10
+      5: 10
+      6: 10
+  intra_tracker:
+    intra_cost_func:
+      0: iou_3d
+      1: iou_3d
+      2: iou_3d
+      3: iou_3d
+      4: iou_3d
+      5: iou_3d
+      6: iou_3d
+    intra_cost_fusion_func: min
+    intra_match_algorithm: Graph_max_weight_matching
+    intra_match_thre:
+      0: 0.28
+      1: 0.28
+      2: 0.28
+      3: 0.28
+      4: 0.28
+      5: 0.88
+      6: 0.79
+    intra_use_cls_mask: true
+    intra_use_voxel_mask: true
+    intra_voxel_mask_size:
+      0: 10
+      1: 10
+      2: 10
+      3: 10
+      4: 10
+      5: 10
+      6: 10
+    timeoverlap_mask_type: NoneOverlap
+    use_matched_completion: true
+preprocessing:
+  Check_class: true
+  NMS_metric:
+    0: fast_giou_bev
+    1: fast_giou_bev
+    2: iou_bev
+    3: iou_bev
+    4: fast_giou_bev
+    5: iou_bev
+    6: fast_giou_bev
+  NMS_thre:
+    0: 0.24
+    1: 0.0
+    2: 0.06
+    3: 0.16
+    4: 0.16
+    5: 0.0
+    6: 0.04
+  NMS_type: scale_nms
+  SCALE:
+    0: 1.6
+    1: 1.4
+    2: 1.3
+    3: 1.5
+    4: 1.1
+    5: 1.4
+    6: 1.0
+  SF_thre:
+    0: 0.0
+    1: 0.0
+    2: 0.0
+    3: 0.0
+    4: 0.0
+    5: 0.0
+    6: 0.0
+  pre_voxel_mask: true
+  pre_voxel_mask_size:
+    0: 1.5
+    1: 3.5
+    2: 4.5
+    3: 1.5
+    4: 0.5
+    5: 0.5
+    6: 3.0
+  preprocess_online: false
+  tracker_specific: false
+refinement:
+  global:
+    Q:
+      0: 0.35
+      1: 0.15
+      2: 0.8
+      3: 0.15
+      4: 0.7
+      5: 0.1
+      6: 0.2
+    R:
+      0: 0.8
+      1: 0.05
+      2: 0.3
+      3: 0.1
+      4: 0.6
+      5: 0.9
+      6: 0.95
+    align_method:
+      0: corner_align
+      1: corner_align
+      2: corner_align
+      3: corner_align
+      4: corner_align
+      5: corner_align
+      6: corner_align
+    global_method:
+      0: SizeCorrector
+      1: SizeCorrector
+      2: SizeCorrector
+      3: SizeCorrector
+      4: SizeCorrector
+      5: SizeCorrector
+      6: SizeCorrector
+    global_model:
+      0: BICYCLE
+      1: CTRA
+      2: CTRA
+      3: BICYCLE
+      4: CTRA
+      5: CV
+      6: CTRA
+    refine_labels:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    topk:
+      0: 4.0
+      1: 12.0
+      2: 6.0
+      3: 2.0
+      4: 10.0
+      5: 16.0
+      6: 20.0
+    use_global: true
+    weight_method:
+      0: weight_sum
+      1: weight_sum
+      2: weight_sum
+      3: weight_sum
+      4: weight_sum
+      5: weight_sum
+      6: weight_sum
+  local:
+    FEJ: false
+    adapt_window_size: false
+    local_method:
+      0: SlidingWindow
+      1: SlidingWindow
+      2: SlidingWindow
+      3: SlidingWindow
+      4: SlidingWindow
+      5: SlidingWindow
+      6: SlidingWindow
+    local_model:
+      0: CA
+      1: CTRA
+      2: CTRA
+      3: CA
+      4: CTRA
+      5: CTRA
+      6: CTRA
+    max_window_size: 9
+    use_local: true
+    window_size:
+      0: 4.0
+      1: 1.0
+      2: 1.0
+      3: 3.0
+      4: 5.0
+      5: 4.0
+      6: 1.0
+    window_step: 1
+tracjectory_manipulator:
+  completion:
+    location_fusion_func: mean
+    max_mis_ts:
+      0: 2
+      1: 2
+      2: 2
+      3: 2
+      4: 2
+      5: 2
+      6: 2
+    score_fusion_func: mean
+  delete:
+    del_length:
+      0: 2
+      1: 2
+      2: 2
+      3: 2
+      4: 2
+      5: 2
+      6: 2
+    del_time_gaps:
+      0: 2
+      1: 2
+      2: 2
+      3: 2
+      4: 2
+      5: 2
+      6: 2
+    min_tra_length:
+      0: 5
+      1: 5
+      2: 5
+      3: 5
+      4: 5
+      5: 5
+      6: 5
+  extend:
+    extend_limit:
+      0: 4
+      1: 2
+      2: 3
+      3: 1
+      4: 4
+      5: 1
+      6: 2
+  fake_order:
+  - delete
+  - completion
+  - split
+  order: []
+  split:
+    split_time_gaps:
+      0: 1
+      1: 1
+      2: 1
+      3: 1
+      4: 1
+      5: 1
+      6: 1
+visualization:
+  axes_limit: 0
+  map_render_range: 60
+  nusc_version: trainval
+  reference_frame_idx: 0
+  render_format: box
+  viz_thre: 0.0
+  viz_use: false
