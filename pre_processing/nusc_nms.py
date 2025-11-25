@@ -36,9 +36,9 @@ def blend_nms(box_infos: dict, metrics: str, thre: float, voxel_mask_size: float
         keep.append(i)
         # only one box left
         if sort_idxs.size == 1: break
-        left, first = [
-            {'np_dets_bottom_corners': corners[idx], 'np_dets_norm_corners': norm_corners[idx], 'np_dets': infos[idx]}
-            for idx in [sort_idxs[1:], i]]
+        # 构建 left 和 first 字典
+        first = {'np_dets_bottom_corners': corners[i], 'np_dets_norm_corners': norm_corners[i], 'np_dets': infos[i]}
+        left = {'np_dets_bottom_corners': corners[sort_idxs[1:]], 'np_dets_norm_corners': norm_corners[sort_idxs[1:]], 'np_dets': infos[sort_idxs[1:]]}
 
         # voxel mask
         if use_voxel_mask:
@@ -54,8 +54,14 @@ def blend_nms(box_infos: dict, metrics: str, thre: float, voxel_mask_size: float
         # the return value number varies by distinct metrics
         if metrics not in METRIC:
             distances = globals()[metrics](first, left)[0]
+            # 确保 distances 是 numpy 数组
+            if not isinstance(distances, np.ndarray):
+                distances = np.array(distances)
         else:
             distances = globals()[metrics](first, left)[1][0]
+            # 确保 distances 是 numpy 数组
+            if not isinstance(distances, np.ndarray):
+                distances = np.array(distances)
 
         # discard non-maximum dets
         nms_voxel_mask[nms_voxel_mask] = (distances > thre)

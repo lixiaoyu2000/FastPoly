@@ -6,7 +6,14 @@ import os, json, sys
 sys.path.append('../..')
 from utils.io import load_file
 from tqdm import tqdm
-from nuscenes.nuscenes import NuScenes
+
+# 可选导入：nuscenes 相关模块
+try:
+    from nuscenes.nuscenes import NuScenes
+    APPEARANCE_AVAILABLE = True
+except ImportError:
+    APPEARANCE_AVAILABLE = False
+    NuScenes = None
 
 OUTPUT_ROOT_PATH = "../detector/"
 
@@ -25,6 +32,8 @@ def reorder_detection(detector_path, dataset_path, dataset_name='NuScenes',
         "unsupported dataset or data version"
 
     if dataset_name == 'NuScenes':
+        if not APPEARANCE_AVAILABLE or NuScenes is None:
+            raise ImportError("nuscenes-devkit is required for NuScenes dataset processing. Please install it: pip install nuscenes-devkit")
         nusc = NuScenes(version='v1.0-' + dataset_version, dataroot=dataset_path,
                         verbose=True)
         frame_num = 6019 if dataset_version == 'trainval' else 6008

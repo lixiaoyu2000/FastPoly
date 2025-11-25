@@ -16,10 +16,11 @@ import math
 class KalmanFilter:
     """kalman filter interface
     """
-    def __init__(self, timestamp: int, config: dict, track_id: int, det_infos: dict) -> None:
+    def __init__(self, timestamp: int, sample_token: str, config: dict, track_id: int, det_infos: dict) -> None:
         # init basic infos, no control input
         self.seq_id = det_infos['seq_id']
         self.initstamp = self.timestamp = timestamp
+        self.sample_token = sample_token
         self.tracking_id, self.class_label = track_id, det_infos['np_array'][-1]
         self.model = config['motion_model']['model'][self.class_label]
         self.dt = config['basic']['LiDAR_interval']
@@ -39,14 +40,15 @@ class KalmanFilter:
         """
         pass
     
-    def predict(self, timestamp: int) -> None:
+    def predict(self, timestamp: int, sample_token: str) -> None:
         """predict tracklet at each frame
         Args:
             timestamp (int): current frame id
+            sample_token (str): current frame sample token
         """
         pass
     
-    def update(self, timestamp: int, det: dict = None) -> None:
+    def update(self, timestamp: int, sample_token: str, det: dict = None) -> None:
         """update tracklet motion and geometric state
         Args:
             timestamp (int): current frame id
@@ -121,9 +123,9 @@ class KalmanFilter:
 class LinearKalmanFilter(KalmanFilter):
     """Linear Kalman Filter for linear motion model, such as CV and CA
     """
-    def __init__(self, timestamp: int, config: dict, track_id: int, det_infos: dict) -> None:
+    def __init__(self, timestamp: int, sample_token: str, config: dict, track_id: int, det_infos: dict) -> None:
         # init basic infos
-        super(LinearKalmanFilter, self).__init__(timestamp, config, track_id, det_infos)
+        super(LinearKalmanFilter, self).__init__(timestamp, sample_token, config, track_id, det_infos)
         # set motion model, default Constant Acceleration(CA) for LKF
         self.model = globals()[self.model](self.has_velo, self.has_geofilter, self.dt) if self.model in ['CV', 'CA'] \
                      else globals()['CA'](self.has_velo, self.has_geofilter, self.dt)
@@ -138,7 +140,6 @@ class LinearKalmanFilter(KalmanFilter):
         self.P = self.model.getInitCovP(self.class_label)
         
         # state to measurement transition
-        self.R = self.model.getMeaNoiseR(self.class_label)
         self.H = self.model.getMeaStateH()
 
         # get different data format tracklet's state
@@ -151,8 +152,9 @@ class LinearKalmanFilter(KalmanFilter):
         self.addFrameObject(self.timestamp, tra_infos, 'predict')
         self.addFrameObject(self.timestamp, tra_infos, 'update')
     
-    def predict(self, timestamp: int) -> None:
+    def predict(self, timestamp: int, sample_token: str) -> None:
         # predict state and errorcov
+        self.timestamp, self.sample_token = timestamp, sample_token
         self.state = self.F * self.state
         self.P = self.F * self.P * self.F.T + self.Q
 
@@ -166,12 +168,13 @@ class LinearKalmanFilter(KalmanFilter):
         }
         self.addFrameObject(timestamp, tra_infos, 'predict')
         
-    def update(self, timestamp: int, det: dict = None) -> None:
+    def update(self, timestamp: int, sample_token: str, det: dict = None) -> None:
         # corner case, no det for updating
         if det is None: return
         
         # update state and errorcov
         meas_info = self.model.getMeasureInfo(det)
+        self.R = self.model.getMeaNoiseR(det)
         _res = meas_info - self.H * self.state
         self.model.warpResYawToPi(_res)
         _S = self.H * self.P * self.H.T + self.R
@@ -192,8 +195,8 @@ class LinearKalmanFilter(KalmanFilter):
         
         
 class ExtendKalmanFilter(KalmanFilter):
-    def __init__(self, timestamp: int, config: dict, track_id: int, det_infos: dict) -> None:
-        super().__init__(timestamp, config, track_id, det_infos)
+    def __init__(self, timestamp: int, sample_token: str, config: dict, track_id: int, det_infos: dict) -> None:
+        super().__init__(timestamp, sample_token, config, track_id, det_infos)
         # set motion model, default Constant Acceleration and Turn Rate(CTRA) for EKF
         self.model = globals()[self.model](self.has_velo, self.has_geofilter, self.dt) if self.model in ['CTRV', 'CTRA', 'BICYCLE'] \
                      else globals()['CTRA'](self.has_velo, self.has_geofilter, self.dt)
@@ -208,7 +211,6 @@ class ExtendKalmanFilter(KalmanFilter):
         
         # set noise matrix(fixed)
         self.Q = self.model.getProcessNoiseQ(self.class_label)
-        self.R = self.model.getMeaNoiseR(self.class_label)
 
         # get different data format tracklet's state
         self.state = self.model.getInitState(det_infos)
@@ -220,8 +222,9 @@ class ExtendKalmanFilter(KalmanFilter):
         self.addFrameObject(self.timestamp, tra_infos, 'predict')
         self.addFrameObject(self.timestamp, tra_infos, 'update')
         
-    def predict(self, timestamp: int) -> None:
+    def predict(self, timestamp: int, sample_token: str) -> None:
         # get jacobian matrix F using the final estimated state of the previous frame
+        self.timestamp, self.sample_token = timestamp, sample_token
         self.F = self.model.getTransitionF(self.state)
         
         # state and errorcov transition
@@ -238,8 +241,9 @@ class ExtendKalmanFilter(KalmanFilter):
         }
         self.addFrameObject(timestamp, tra_infos, 'predict')
     
-    def update(self, timestamp: int, det: dict = None) -> None:
+    def update(self, timestamp: int, sample_token: str, det: dict = None) -> None:
         # corner case, no det for updating
+        self.timestamp, self.sample_token = timestamp, sample_token
         if det is None: return
         
         # get measure infos for updating, and project state into meausre space
@@ -252,6 +256,7 @@ class ExtendKalmanFilter(KalmanFilter):
         
         # get jacobian matrix H using the predict state
         self.H = self.model.getMeaStateH(self.state)
+        self.R = self.model.getMeaNoiseR(det)
         
         # obtain KF gain and update state and errorcov
         _S = self.H * self.P * self.H.T + self.R

@@ -12,7 +12,7 @@ from data.script.NUSC_CONSTANT import *
 from motion_module import FrameObject, CA, CTRA, BICYCLE
 
 class KalmanModel:
-    def __init__(self, cfg):
+    def __init__(self, cfg, cls_label: int = None):
         """
         state vector: [z, w, l, h]
         measure vector: [z, w, l, h]
@@ -38,7 +38,6 @@ class KalmanModel:
         self.P = self.getInitCovP(class_label)
 
         # state to measurement transition
-        self.R = self.getMeaNoiseR()
         self.H = self.getMeaStateH()
 
         init_state = np.array(det_infos['np_array'][self.idx])
@@ -73,10 +72,27 @@ class KalmanModel:
         """
         return np.mat(np.eye(self.SD))
 
-    def getMeaNoiseR(self) -> np.mat:
-        """set measure noise(fix)
+    def getMeaNoiseR(self, det) -> np.mat:
+        """get measurement noise matrix based on matching modality and detection score
+        
+        Customize the noise matrix based on information such as
+        measurement bias, confidence score, association info, etc.
+        
+        Args:
+            cls_label (int): set init errorcov category-specific.
+
+        Returns:
+            np.mat: measure noise matrix(fix)
         """
-        return np.mat(np.eye(self.MD))
+        match_stage = det['match_stage'] if det is not None else None
+        cls_score, cls_name = det['np_array'][-2], CLASS_STR_TO_SEG_CLASS[det['np_array'][-1]]
+
+        if match_stage == 1:
+            # return np.mat(np.eye(self.MD))
+            return np.mat(np.eye(self.MD)) * MEASURE_NOISE[cls_name] * 10 * (1 - cls_score) ** 2
+        elif match_stage == 2:
+            return np.mat(np.eye(self.MD)) * MEASURE_NOISE[cls_name] * 100 * (1 - cls_score) ** 2
+        else: raise "invalid measurement noise"
 
     def getOutputInfo(self, frame_obj, state, mode):
         """assign geometry infos to the FrameObject inplace
@@ -105,6 +121,7 @@ class KalmanModel:
         """update geometric state with detection
         """
         # update state and errorcov, the identity matrix (self.H) is omitted
+        self.R = self.getMeaNoiseR(det)
         _res = np.mat(det['np_array'][self.idx]).T - self.state
         _S = self.P + self.R
         _KF_GAIN = self.P * _S.I
@@ -210,7 +227,7 @@ class GeometryManagement:
         state = self.model.predict()
 
         # assign tracklet const states
-        self.model.getOutputInfo(predict_obj, state, 'predict')
+        self.model.getOutputInfo(predict_obj, np.array(state)[:, 0], 'predict')
 
     def update(self, timestamp: int, update_obj: FrameObject, raw_det: dict = None) -> None:
         """Update trajectory geometric info inplace directly using filterd state
@@ -227,6 +244,6 @@ class GeometryManagement:
         state = self.model.update(raw_det)
 
         # assign tracklet const states
-        self.model.getOutputInfo(update_obj, state, 'update')
+        self.model.getOutputInfo(update_obj, np.array(state)[:, 0], 'update')
 
 

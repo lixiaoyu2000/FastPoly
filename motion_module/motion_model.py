@@ -71,17 +71,27 @@ class ABC_MODEL(abc.ABC):
         """
         pass
     
-    @abc.abstractmethod
-    def getMeaNoiseR(self, cls_label: int) -> np.mat:
-        """get measurement noise matrix. The value set is also somewhat arbitrary
-
+    def getMeaNoiseR(self, det: dict = None) -> np.mat:
+        """get measurement noise matrix based on matching modality and detection score
+        
+        Customize the noise matrix based on information such as
+        measurement bias, confidence score, association info, etc.
+        
         Args:
             cls_label (int): set init errorcov category-specific.
 
         Returns:
             np.mat: measure noise matrix(fix)
         """
-        pass
+        match_stage = det['match_stage'] if det is not None else None
+        cls_score, cls_name = det['np_array'][-2], CLASS_STR_TO_SEG_CLASS[det['np_array'][-1]]
+
+        if match_stage == 1:
+            # return np.mat(np.eye(self.MD))
+            return np.mat(np.eye(self.MD)) * MEASURE_NOISE[cls_name] * 10 * (1 - cls_score) ** 2
+        elif match_stage == 2:
+            return np.mat(np.eye(self.MD)) * MEASURE_NOISE[cls_name] * 100 * (1 - cls_score) ** 2
+        else: raise "invalid measurement noise"
     
     @abc.abstractmethod
     def getMeaStateH(self) -> np.mat:
@@ -202,11 +212,6 @@ class CTRA(ABC_MODEL):
         """set process noise(fix)
         """
         return np.mat(np.eye(self.SD)) * 1
-
-    def getMeaNoiseR(self, cls_label) -> np.mat:
-        """set measure noise(fix)
-        """
-        return np.mat(np.eye(self.MD)) * 1
 
     def stateTransition(self, state: np.mat) -> np.mat:
         """state transition,
@@ -528,16 +533,6 @@ class BICYCLE(ABC_MODEL):
         Q[-2, -2] /= 2
         Q[-4, -4] *= 2
         return Q
-
-    def getMeaNoiseR(self, cls_label) -> np.mat:
-        """set measure noise(fix)
-        """
-        R = np.mat(np.eye(self.MD)) * FINETUNE_R[cls_label]
-        R[-1, -1] /= 2
-        if self.has_velo:
-            R[-2, -2] *= 2
-            R[-3, -3] *= 2
-        return R
 
     def getTransitionF(self, state: np.mat) -> np.mat:
         """obtain matrix in the motion_module/script/BIC_kinect_jacobian.ipynb
@@ -927,15 +922,6 @@ class CV(ABC_MODEL):
         Q[-3, -3] *= 2
         return Q
 
-    def getMeaNoiseR(self, cls_label) -> np.mat:
-        """set measure noise(fix)
-        """
-        R = np.mat(np.eye(self.MD)) * FINETUNE_R[cls_label]
-        R[-1, -1] /= 2
-        if self.has_velo:
-            R[-2, -2] *= 2
-            R[-3, -3] *= 2
-        return R
 
     def getTransitionF(self) -> np.mat:
         """obtain matrix in the motion_module/script/CV_kinect_jacobian.ipynb
@@ -1083,10 +1069,6 @@ class CA(ABC_MODEL):
         """
         return np.mat(np.eye(self.SD)) * 100
 
-    def getMeaNoiseR(self, cls_label) -> np.mat:
-        """set measure noise(fix)
-        """
-        return np.mat(np.eye(self.MD)) * 0.001
 
     def getTransitionF(self) -> np.mat:
         """obtain matrix in the motion_module/script/Linear_kinect_jacobian.ipynb
@@ -1260,16 +1242,6 @@ class CTRV(ABC_MODEL):
         Q[-3, -3] *= 2
         return Q
 
-
-    def getMeaNoiseR(self, cls_label) -> np.mat:
-        """set measure noise(fix)
-        """
-        R = np.mat(np.eye(self.MD)) * FINETUNE_R[cls_label]
-        R[-1, -1] /= 2
-        if self.has_velo:
-            R[-2, -2] *= 2
-            R[-3, -3] *= 2
-        return R
 
     def stateTransition(self, state: np.mat) -> np.mat:
         """state transition,

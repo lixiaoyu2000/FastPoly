@@ -14,6 +14,19 @@ ALL_METRIC = ['iou_bev', 'iou_3d', 'giou_bev', 'giou_3d', 'd_eucl', 'a_giou_3d',
 CLASS_SEG_TO_STR_CLASS = {'bicycle': 0, 'bus': 1, 'car': 2, 'motorcycle': 3, 'pedestrian': 4, 'trailer': 5, 'truck': 6}
 CLASS_STR_TO_SEG_CLASS = {0: 'bicycle', 1: 'bus', 2: 'car', 3: 'motorcycle', 4: 'pedestrian', 5: 'trailer', 6: 'truck'}
 
+# Average height priors used for BEV detectors (used when fix_posz/fix_height are enabled)
+NUSC_AVG_H = {'bicycle': 1.28, 'bus': 3.46, 'car': 1.73, 'motorcycle': 1.47, 'pedestrian': 1.7, 'trailer': 3.87, 'truck': 2.84}
+
+# camera name
+USED_ALLCAM = [
+    "CAM_BACK",
+    "CAM_FRONT",
+    "CAM_BACK_RIGHT",
+    "CAM_FRONT_RIGHT",
+    "CAM_BACK_LEFT",
+    "CAM_FRONT_LEFT",
+]
+
 # math
 PI, TWO_PI = np.pi, 2 * np.pi
 
@@ -44,6 +57,17 @@ FULL_CONSTANT_MODEL = ['CA', 'CV', 'CTRA', 'CTRV']
 
 FINETUNE_Q = {1: 0.49, 0: 0.81, 2: 0.49, 3: 0.25, 4: 0.36, 5: 0.04, 6: 0.49}
 FINETUNE_R = {1: 1, 0: 1, 2: 1, 3: 1, 4: 1, 5: 0.001, 6: 1}
+
+# category-specific measurement noise in the kalman filter
+MEASURE_NOISE = {
+    'bus': 0.1,
+    'car': 1,
+    'trailer': 0.1,
+    'truck': 0.1,
+    'pedestrian': 1,
+    'bicycle': 0.1,
+    'motorcycle': 0.5,
+}
 
 # score estimatation method
 SCORE_PREDICT = ['Minus', 'Normal', 'Prob']

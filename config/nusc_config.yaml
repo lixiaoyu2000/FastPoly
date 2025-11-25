@@ -3,7 +3,7 @@ basic:
   has_velo: True       # whether detector has velo info
   LiDAR_interval: 0.5  # the interval between two adjacent frames of the LiDAR scan, NuScenes: 2HZ
   CLASS_NUM: 7         # number of tracking category, NuScenes: 7
-  Multiprocessing: False
+  Multiprocessing: True
 
   # CLASS_LABEL: {'bicycle': 0, 
   #               'bus': 1, 
@@ -13,28 +13,53 @@ basic:
   #               'trailer': 5, 
   #               'truck': 6}
 
-preprocessing:
-  SF_thre: {0: 0.15, 3: 0.16, 1: 0.12, 2: 0.16, 5: 0.13, 6: 0, 4: 0.19}
-  NMS_type: scale_nms  # blend_nms, scale_nms
-  # -------------classic NMS---------------
-  #  NMS_thre: 0.08
-  #  NMS_metric: a_giou_bev  # iou_bev, iou_3d, giou_bev, giou_3d, d_eucl, a_giou_bev, a_giou_3d, a_iou_bev
-  # --------------scale NMS----------------
-  NMS_thre: { 0: 0.08, 3: 0.08, 1: 0.08, 2: 0.08, 5: 0.08, 6: 0.08, 4: 0.08}
-  SCALE: { 0: 1.4, 3: 1, 1: 1, 2: 1, 5: 1, 6: 1, 4: 1.1}
-  NMS_metric: { 1: 'a_giou_bev', 0: 'a_giou_bev', 2: 'iou_bev', 3: 'iou_bev', 4: 'a_giou_bev', 5: 'iou_bev', 6: 'a_giou_bev'}
-  voxel_mask: True
-  voxel_mask_size: {0: 5, 3: 5, 1: 5, 2: 5, 5: 5, 6: 5, 4: 5} # the voxel mask threshold, default first element is used
-
+preprocessing:  
+  NMS_filter:
+    # multi-camera BEV detector
+    SF_thre: {0: 0.28, 3: 0.29, 1: 0.14, 2: 0.2, 5: 0.12, 6: 0.23, 4: 0.35}
+    # centerpoint
+    # SF_thre: {0: 0.14, 3: 0.16, 1: 0, 2: 0.16, 5: 0.1, 6: 0, 4: 0.16}
+    NMS_type: scale_nms       # blend_nms, no_blend_nms, blend_soft_nms, scale_nms
+    # -------------classic NMS--------------
+#    NMS_thre: 0.08
+#    NMS_metric: iou_bev       # iou_bev, iou_3d, giou_bev, giou_3d, d_eucl
+    # --------------scale NMS----------------
+    NMS_thre: {0: 0.08, 3: 0.08, 1: 0.08, 2: 0.08, 5: 0.08, 6: 0.08, 4: 0.08}
+    SCALE: {0: 1.9, 3: 1.7, 1: 1, 2: 1, 5: 1, 6: 1, 4: 2.25}
+    NMS_metric: {1: 'iou_bev', 0: 'iou_bev', 2: 'iou_bev', 3: 'iou_bev', 4: 'giou_bev', 5: 'iou_bev', 6: 'iou_bev'}
+    voxel_mask: True  
+    voxel_mask_size: {0: 5, 3: 5, 1: 5, 2: 5, 5: 5, 6: 5, 4: 5} # the voxel mask threshold, default first element is used
+  tracker_filter:
+    use: True                 # whether to use tracker filter to recall low-score dets
+    metric: 'iou_2d'          # iou_2d, giou_2d
+    mix_func: 'sum'           # integrate multi-camera affinity function in pre-processing stage, sum, max, arg
+    algorithm: 'Hungarian'    # Greedy, Hungarian, Mutual Nearest Neighbor(MNN) for the pro-processing stage
+    cls_spec: True            # whether to integrate category-specific matching
+    # thre: {0: -1}           # recall low-quality dets threshold
+    thre: {0: -1, 3: -1, 1: -1, 2: -1, 5: -1, 6: -1, 4: -1}           # recall low-quality dets threshold
+  others:
+    fix_posz: {0: True, 3: True, 1: True, 2: True, 5: True, 6: True, 4: True}         # object's Z-axis position maybe unreliable under BEV detector
+    fix_height: {0: False, 3: True, 1: False, 2: False, 5: False, 6: False, 4: False} # object's height maybe unreliable under BEV detector
 association:
-  category_metrics: { 1: 'a_giou_bev', 0: 'a_giou_3d', 2: 'a_giou_3d', 3: 'a_giou_3d', 4: 'a_giou_3d', 5: 'a_giou_3d', 6: 'a_giou_3d'}
-  second_metric: 'a_giou_bev'
-  two_stage: True  # Whether to use two-stage data association
-  first_thre: {1: 1.16, 0: 1.62, 2: 1.21, 3: 1.6, 4: 1.78, 5: 1.16, 6: 1.22}  # category-specific one-stage thresholds
-  second_thre: {0: 1.0}  # two-stage thresholds
-  algorithm : 'Hungarian'  # Greedy, Hungarian, Mutual Nearest Neighbor(MNN)
-  voxel_mask: True
-  voxel_mask_size: {0: 3, 3: 3, 1: 3, 2: 3, 5: 3, 6: 3, 4: 3} # the voxel mask threshold, default first element is used
+  motion:
+    category_metrics: {1: 'a_giou_bev', 0: 'a_giou_3d', 2: 'a_giou_3d', 3: 'a_giou_3d', 4: 'a_giou_3d', 5: 'a_giou_3d', 6: 'a_giou_3d'}
+  # appear association
+  appear:
+    mix_func1: 'sum'          # integrate multi-camera affinity function in second stage, sum, max, arg
+    second_metric: 'giou_2d'   # iou_2d, giou_2d
+
+  basic:
+    voxel_mask: True
+    voxel_mask_size: {0: 3, 3: 3, 1: 3, 2: 3, 5: 3, 6: 3, 4: 3} # the voxel mask threshold, default first element is used
+    # multi-camera BEV detector
+    first_thre: {1: 1.33, 0: 1.65, 2: 1.31, 3: 1.5, 4: 1.7, 5: 1.45, 6: 1.31}  # category-specific one-stage thresholds
+    # centerpoint detector
+    # first_thre: {1: 1.335, 0: 1.55, 2: 1.31, 3: 1.44, 4: 1.685, 5: 1.25, 6: 1.21}
+    f_algorithm: 'Hungarian'  # Greedy, Hungarian, Mutual Nearest Neighbor(MNN) for the first stage
+
+    two_stage: True         # Whether to use three-stage data association
+    two_thre: {0: -3.5, 3: -3.2, 1: -4, 2: -3.5, 5: -4, 6: -4, 4: -4}     # third-stage threshold
+    t_algorithm: 'Hungarian'  # Greedy, Hungarian, Mutual Nearest Neighbor(MNN) for the third stage
 
 motion_model:
   # two kalman filter, LinearKalmanFilter, ExtendKalmanFilter
@@ -44,7 +69,7 @@ motion_model:
 
 geometry_model:
   use: {1: True, 0: True, 2: True, 3: True, 4: True, 5: True, 6: True}             # whether to decouple constant states from motion models
-  filter: {1: 'MedianModel', 0: 'MedianModel', 2: 'MedianModel', 3: 'MedianModel', 4: 'MeanModel', 5: 'MedianModel', 6: 'MedianModel'} # optional: KalmanModel, MedianModel, MeanModel
+  filter: {1: 'KalmanModel', 0: 'KalmanModel', 2: 'KalmanModel', 3: 'KalmanModel', 4: 'KalmanModel', 5: 'KalmanModel', 6: 'KalmanModel'} # optional: KalmanModel, MedianModel, MeanModel
   window_size: {1: 3, 0: 3, 2: 3, 3: 3, 4: 3, 5: 3, 6: 3}
 
 life_cycle:
@@ -61,11 +86,16 @@ life_cycle:
     termination: average # average, latest
 
 output:
-  punish_num: 1         # The maximum number of predicted frames to write to the output file
-  post_nms: False       # whether to use post-nms, this feature is used to reduce FP prediction
-  NMS_thre: 0.08
-  NMS_type: blend_nms   # blend_nms, no_blend_nms, blend_soft_nms
-  NMS_metric: iou_bev   # iou_bev, iou_3d, giou_bev, giou_3d, d_eucl
+  punish_num: 1               # The maximum number of predicted frames to write to the output file
+  post_nms: True              # whether to use post-nms, this feature is used to reduce FP prediction
+  NMS_type: scale_nms         # blend_nms, no_blend_nms, blend_soft_nms, scale_nms
+  # -------------classic NMS--------------
+  # NMS_thre: 0.08
+  # NMS_metric: iou_bev       # iou_bev, iou_3d, giou_bev, giou_3d, d_eucl
+  # --------------scale NMS----------------
+  NMS_thre: { 0: 0.08, 3: 1, 1: 1, 2: 1, 5: 0.08, 6: 1, 4: 1 }
+  SCALE: { 0: 1, 3: 1, 1: 1, 2: 1, 5: 1, 6: 1, 4: 1 }
+  NMS_metric: { 1: 'iou_bev', 0: 'iou_bev', 2: 'iou_bev', 3: 'iou_bev', 4: 'iou_bev', 5: 'iou_bev', 6: 'iou_bev' }
 
 debug:
   is_debug: true # Whether to debug the code

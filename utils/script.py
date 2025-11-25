@@ -3,6 +3,7 @@ matching script
 """
 import pdb
 import numpy as np
+from typing import Tuple
 from data.script.NUSC_CONSTANT import *
 from .math import expand_dims
 from geometry.nusc_utils import mask_between_boxes
@@ -89,3 +90,80 @@ def voxel_mask(det_infos: np.array, tra_infos: np.array, metric: str = 'eucl', t
     elif metric == 'manh': dis_mat = np.linalg.norm(dets_xyz - tras_xyz, ord=1, axis=2)
 
     return dis_mat < thre
+def expand_category_cost(raw_cost: np.array, cls_num: int, det_labels: np.array, tra_labels: np.array) -> Tuple[np.array, np.array]:
+    """
+    integrate category-specific matching into cost matrix
+    :param raw_cost: np.array, raw cost matrix, [det_num, tra_num]
+    :param cls_num: int, number of category
+    :param det_labels: np.array, class labels of detections
+    :param tra_labels: np.array, class labels of trajectories
+    :return: np.array, np.array, category-specific cost matrix and category mask, [cls_num, det_num, tra_num]
+    """
+    cls_cost = raw_cost[None, :, :].repeat(cls_num, axis=0)
+    mask_result = mask_tras_dets(cls_num, det_labels, tra_labels)
+    # mask_tras_dets returns a tuple (valid_mask, same_mask), we only need the first one
+    if isinstance(mask_result, tuple):
+        valid_mask = mask_result[0]
+    else:
+        valid_mask = mask_result
+    cls_cost[~valid_mask] = 0
+    return cls_cost, valid_mask
+
+
+def visible_cam_mask(det_visible_cams: list, tra_visible_cams: list) -> np.array:
+    """visible mask, cost is valid only when both det and tra are visible 
+    at the same camera
+
+    Args:
+        det_visible_cams (list): list of list, [[cams id for det 1], [cams id for det 2], ...], cameras which can observe object
+        tra_visible_cams (list): list of list, [[cams id for det 1], [cams id for det 2], ...], cameras which can observe object
+    
+    Notes:
+        Args: Empty list refers to object(det/tracklet) is invisible in all camera.
+        Returns: Two possible need to masked situations:
+        - 1. det and tra are both invisible 
+        - 2. det or tra is invisible 
+    
+    Returns:
+        np.array: [cam_id, det_num, tra_num], True denotes valid
+    """
+    assert isinstance(det_visible_cams, list) and isinstance(tra_visible_cams, list)
+    def fancy_idx(cam_ids: list):
+        flatten_cam_ids = [item for sublist in cam_ids for item in sublist]
+        det_ids = [det_idx for det_idx, cam_num in enumerate(cam_ids) for _ in range(len(cam_num))]
+        return flatten_cam_ids, det_ids
+    
+    cam_num, det_num, tra_num = len(USED_ALLCAM), len(det_visible_cams), len(tra_visible_cams)
+    det_vis_mask = np.zeros(shape=(cam_num, det_num, tra_num), dtype=bool)
+    tra_vis_mask = np.zeros(shape=(cam_num, det_num, tra_num), dtype=bool)
+    
+    det_cam_idxs, det_idxs = fancy_idx(det_visible_cams)
+    tra_cam_idxs, tra_idxs = fancy_idx(tra_visible_cams)
+    det_vis_mask[det_cam_idxs, det_idxs, :] = True
+    tra_vis_mask[tra_cam_idxs, :, tra_idxs] = True
+    
+    return np.logical_and(det_vis_mask, tra_vis_mask)
+
+def concat_affinity(raw_affinity: np.array, aff_mask: np.array, mix_func: str) -> np.array:
+    """integrate high dimensional affinity matrix to finial affinity matrix
+
+    Args:
+        raw_affinity (np.array): [dim, det_num, tra_num], High dimensional affinity matrix
+        aff_mask (np.array): [dim, det_num, tra_num], true denotes affinity is valid
+        mix_func (str): concat function, max/sum/avg
+
+    Notes:
+        all metrics low limit needed to warp to 0
+    
+    Returns:
+        np.array: finial affinity matrix 
+    """
+    
+    if mix_func == 'sum':
+        return np.sum(raw_affinity, axis=0)
+    elif mix_func == 'max':
+        return np.max(raw_affinity, axis=0)
+    elif mix_func == 'avg':
+        return np.sum(raw_affinity, axis=0) / (np.sum(aff_mask, axis=0) + 1e-7)
+    else:
+        raise Exception('unsupported concat function.')

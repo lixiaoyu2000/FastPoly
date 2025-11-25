@@ -7,12 +7,15 @@ import pdb
 from .nusc_score_manage import ScoreManagement
 
 class LifeManagement:
-    def __init__(self, timestamp: int, config: dict, class_label: int):
+    def __init__(self, timestamp: int, config: dict, class_label: int, det_infos: dict = None):
         self.cfg = config['life_cycle']
         self.curr_time = self.init_time = timestamp
         self.time_since_update, self.hit, self.state_jump = 0, 1, False
         self.delete_thre = self.cfg['score']['delete_thre'][class_label]
         self.min_hit, self.max_age = self.cfg['basic']['min_hit'][class_label], self.cfg['basic']['max_age'][class_label]
+        # only for the quick iter
+        if det_infos is not None and det_infos.get('low_conf', False):
+            self.min_hit = 3
         self.state = 'active' if self.min_hit <= 1 or timestamp <= self.min_hit else 'tentative'
         self.termination = config['life_cycle']['score']['termination']
 
@@ -28,21 +31,20 @@ class LifeManagement:
         """
         update tracklet lifecycle status, switch tracklet's state (tentative/dead/active)
         :param timestamp: int, current timestamp, frame id
-        :param score_mgt: ScoreManagement, score management of current tracklet
+        :param score_obj: ScoreObject, score object instance at the current frame
         :param det: matched detection at current frame
         """
         if det is not None:
             self.hit += 1
             self.time_since_update = 0
 
-        if self.state == 'tentative':
+        if self.state == 'tentative': 
             if (self.hit >= self.min_hit) or (timestamp <= self.min_hit):
                 self.state, self.state_jump = 'active', True
             elif self.time_since_update > 0:
                 self.state = 'dead'
             else: self.state_jump = False
         elif self.state == 'active':
-
             if self.termination == 'average':
                 score_kill = (score_mgt.trk_avg_score < self.delete_thre)
             elif self.termination == 'latest':
